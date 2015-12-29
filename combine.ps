@@ -1,0 +1,70 @@
+%!PS
+
+/sigprintSheetsPerSection      6 def
+/sigprintMarkWidth            25 def
+/sigprintMarkHeight           12 def
+/sigprintMarkOffset           50 def
+/sigprintPageWidth      841.8888 def
+
+globaldict begin
+    /sigprintPageNo 0 store
+end
+
+% Save actual 'showpage' command.
+/sigprintSavedShowpage /showpage load def
+/sigprintSavedInitgraphics /initgraphics load def
+
+/sigprintShowpage {
+    % Increment page number and store back.
+    sigprintPageNo 1 add /sigprintPageNo exch store
+
+    % Debug printing (just in case).
+    %sigprintPageNo 20 string cvs print
+
+    gsave
+    sigprintSavedInitgraphics
+
+    595.27584 0 translate
+    90 rotate
+
+    sigprintPageNo
+    sigprintSheetsPerSection 2 mul
+    mod
+
+    1 eq {
+        newpath
+
+        % moveto argument x
+        sigprintPageWidth 2 div
+        sigprintMarkWidth 2 div
+        sub
+        
+        % moveto argument y
+        sigprintPageNo sigprintSheetsPerSection div 2 div truncate sigprintMarkHeight mul
+        sigprintMarkOffset
+        add
+
+        moveto
+
+        % Draw the rest of mark.
+        sigprintMarkWidth 0      rlineto
+        0 sigprintMarkHeight     rlineto
+        sigprintMarkWidth neg 0  rlineto
+        closepath
+
+        0 setgray
+        fill
+    } if
+    
+    grestore
+    sigprintSavedShowpage
+} def
+
+userdict begin
+    /showpage { sigprintShowpage } bind def
+end
+
+% Run other script with 'showpage' overriden.
+(test.ps) run
+
+
